@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blooket Factory — PC Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght=400;700;900&display=swap');
+
+        :root {
+            --bl-purple-dark: #2f1c5a;
+            --bl-topbar: #261649;
+            --bl-blue: #0bc2f9;
+            --bl-green: #35e36b;
+            --bl-red: #ff4a4a;
+            --bl-orange: #f39c12;
+            --bl-gold: #ffca08;
+            --shadow: 0px 5px 0px rgba(0, 0, 0, 0.25);
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--bl-purple-dark);
+            color: #fff;
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            box-sizing: border-box;
+        }
+
+        .screen { display: none; }
+        .active { display: block !important; }
+
+        h2 {
+            text-align: center;
+            font-weight: 900;
+            text-shadow: var(--shadow);
+            margin-top: 20px;
+            font-size: 32px;
+        }
+
+        label {
+            font-weight: 700;
+            font-size: 18px;
+            display: block;
+            margin-top: 15px;
+            color: #bbb;
+        }
+
+        button {
+            font-family: 'Nunito', sans-serif;
+            font-weight: 900;
+            border: none;
+            color: white;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            transition: transform 0.05s, box-shadow 0.05s;
+            text-transform: uppercase;
+            box-sizing: border-box;
+        }
+        button:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .btn-blue { background: var(--bl-blue); padding: 16px 20px; font-size: 20px; width: 100%; margin: 12px 0; }
+        .btn-green { background: var(--bl-green); padding: 16px 20px; font-size: 20px; width: 100%; margin: 12px 0; }
+        .btn-purple { background: #8e44ad; padding: 16px 20px; font-size: 18px; width: 100%; margin: 12px 0; }
+        .btn-skip { background: #1f618d; padding: 12px 40px; font-size: 20px; border-radius: 8px; text-transform: none; }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin: 6px 0;
+            border-radius: 10px;
+            border: 3px solid #261649;
+            background: #1e113a;
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        .line-q-card {
+            background: var(--bl-topbar);
+            padding: 15px;
+            border-radius: 14px;
+            margin-bottom: 20px;
+            border: 2px solid rgba(255,255,255,0.05);
+        }
+        
+        .ans-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 4px 0;
+        }
+        .btn-toggle-correct {
+            padding: 10px;
+            font-size: 18px;
+            min-width: 50px;
+            height: 46px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .status-wrong { background: var(--bl-red); }
+        .status-correct { background: var(--bl-green); }
+
+        .blooket-top-q {
+            background: #ffffff;
+            color: #333333;
+            text-align: center;
+            padding: 40px 20px;
+            font-size: 26px;
+            font-weight: 900;
+            border-radius: 20px;
+            margin: 20px auto;
+            max-width: 900px;
+            box-shadow: 0px 6px 0px rgba(0,0,0,0.15);
+            box-sizing: border-box;
+        }
+
+        .blooket-answers-line { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); 
+            gap: 15px; 
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .blooket-ans-container {
+            position: relative;
+            width: 100%;
+        }
+        .blooket-ans-btn { 
+            width: 100%; 
+            height: 80px; 
+            font-size: 22px; 
+            text-transform: none; 
+            border-radius: 12px; 
+            text-align: center;
+            padding: 0 50px 0 20px;
+        }
+        .blooket-ans-btn:nth-child(1) { background: var(--bl-orange); box-shadow: 0px 5px 0px #b9750d; }
+        .blooket-ans-btn:nth-child(1):active { box-shadow: none; }
+        .blooket-ans-btn:nth-child(2) { background: #2575fc; box-shadow: 0px 5px 0px #1a54b8; }
+        .blooket-ans-btn:nth-child(2):active { box-shadow: none; }
+        .blooket-ans-btn:nth-child(3) { background: #2a9d8f; box-shadow: 0px 5px 0px #1e7066; }
+        .blooket-ans-btn:nth-child(3):active { box-shadow: none; }
+        .blooket-ans-btn:nth-child(4) { background: var(--bl-red); box-shadow: 0px 5px 0px #b83333; }
+        .blooket-ans-btn:nth-child(4):active { box-shadow: none; }
+
+        .feedback-badge {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 26px;
+            display: none;
+            pointer-events: none;
+        }
+
+        .factory-header { text-align: center; background: var(--bl-topbar); padding: 15px; border-radius: 12px; margin-bottom: 15px; position: relative; }
+        .factory-cash { font-size: 32px; font-weight: 900; color: #fff; }
+        .factory-sub { font-size: 16px; color: var(--bl-green); font-weight: 700; margin-top: 4px; }
+        .factory-timer-badge { position: absolute; top: 15px; right: 15px; color: var(--bl-red); font-weight: 900; font-size: 18px; }
+        .factory-streak-badge { font-size: 14px; color: var(--bl-gold); font-weight: 700; margin-top: 5px; }
+
+        .factory-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
+            gap: 12px; 
+            margin-bottom: 20px; 
+        }
+        .factory-slot { background: #4e328c; border-radius: 14px; padding: 12px; text-align: center; border: 2px solid rgba(255,255,255,0.1); box-shadow: var(--shadow); position: relative; overflow: hidden; }
+        
+        .btn-sell-blook {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255, 74, 74, 0.8);
+            border: none;
+            color: white;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            font-size: 14px;
+            font-weight: 900;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            box-shadow: none;
+            padding: 0;
+            text-transform: none;
+        }
+
+        .slot-title { font-size: 11px; color: #bbb; z-index: 2; position: relative; white-space: nowrap; }
+        .slot-emoji { font-size: 38px; margin: 5px 0; z-index: 2; position: relative; }
+        .slot-name { font-weight: 900; font-size: 15px; z-index: 2; position: relative; }
+        
+        .slot-progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 5px;
+            background: var(--bl-blue);
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        .btn-max { background: #a66bbe; font-size: 12px; padding: 6px; border-radius: 6px; margin-top: 8px; width: 100%; z-index: 2; position: relative; text-transform: none; }
+        .btn-max:disabled { background: #555; color: #aaa; cursor: not-allowed; box-shadow: none; transform: none; }
+
+        .choose-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(20, 10, 40, 0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; padding: 20px; box-sizing: border-box; }
+        .choose-title { font-size: 36px; font-weight: 900; color: white; margin-bottom: 5px; text-shadow: 0 4px 0 rgba(0,0,0,0.4); }
+        .choose-subtitle { font-size: 14px; color: #aaa; margin-bottom: 25px; font-weight: 700; text-align: center; }
+        .choose-cards-container { display: flex; gap: 12px; width: 100%; max-width: 450px; justify-content: center; margin-bottom: 40px; }
+        .choose-card { background: #1a75ff; border-radius: 16px; flex: 1; padding: 20px 10px; text-align: center; box-shadow: 0px 6px 0px #0052cc; cursor: pointer; }
+        .choose-card:active { transform: translateY(4px); box-shadow: none; }
+        .choose-card .c-emoji { font-size: 46px; }
+        
+        .project-item-row {
+            display: flex;
+            background: #1e113a;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 10px;
+            align-items: center;
+            justify-content: space-between;
+            border: 2px solid #261649;
+        }
+
+        @media (max-width: 768px) {
+            .blooket-answers-line { grid-template-columns: 1fr; }
+            .blooket-ans-btn { height: 65px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div id="scr-auth" class="screen active" style="padding-top: 40px;">
+        <h2>Blooket Factory</h2>
+        <div style="background: var(--bl-topbar); padding: 25px; border-radius: 14px; margin-top: 25px; border: 2px solid rgba(255,255,255,0.05);">
+            
+            <div id="auth-step-email">
+                <label>Введите вашу рабочую почту:</label>
+                <input type="email" id="auth-email" placeholder="name@example.com">
+                <button class="btn-blue" style="margin-top: 15px;" onclick="checkEmailNextStep()">Далее ➡️</button>
+            </div>
+
+            <div id="auth-step-password" style="display: none;">
+                <div id="auth-status-msg" style="font-weight: 700; margin-bottom: 10px; color: var(--bl-gold);"></div>
+                
+                <label>Введите пароль:</label>
+                <input type="password" id="auth-password" placeholder="••••••••">
+                
+                <div id="reg-confirm-box" style="display: none;">
+                    <label>Повторите пароль для подтверждения:</label>
+                    <input type="password" id="auth-password-confirm" placeholder="••••••••">
+                </div>
+
+                <div style="display:flex; gap: 10px; margin-top: 15px;">
+                    <button class="btn-blue" style="background:#555; font-size:16px;" onclick="backToEmailStep()">⬅️ Назад</button>
+                    <button class="btn-green" style="font-size:16px; flex:1;" onclick="handleFinalAuth()">Войти в аккаунт</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    
+    <div id="scr-project-list" class="screen" style="padding-top: 30px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span id="user-badge" style="font-size:15px; color:var(--bl-blue); font-weight:700;"></span>
+            <button style="background:var(--bl-red); padding:5px 12px; font-size:12px; border-radius:6px;" onclick="logout()">Выйти</button>
+        </div>
+        <h2>Мои викторины</h2>
+        <div id="project-list-container" style="margin: 20px 0;"></div>
+        <button class="btn-purple" onclick="createNewProjectAction()">📁 Создать новый проект</button>
+    </div>
+
+    <div id="scr-project-hub" class="screen">
+        <h2 id="hub-project-title">Меню проекта</h2>
+        <button class="btn-green" style="margin-top: 30px;" onclick="openSettingsScreen()">▶ Играть</button>
+        <button class="btn-blue" onclick="openEditorScreen()">📝 Добавить вопрос / Редактор</button>
+        <button class="btn-purple" style="background:#555;" onclick="changeScreen('scr-project-list')">⬅ К списку проектов</button>
+    </div>
+
+    <div id="scr-editor-line" class="screen">
+        <h2 style="color:var(--bl-gold);">Линия вопросов</h2>
+        <div id="questions-line-container"></div>
+        <button class="btn-purple" onclick="addNewQuestionToLine()">➕ Добавить новый вопрос</button>
+        <button class="btn-green" onclick="saveProjectAndReturn()">💾 Сохранить проект</button>
+        <button class="btn-blue" style="background: var(--bl-red);" onclick="changeScreen('scr-project-hub')">↩️ Назад без сохранения</button>
+    </div>
+
+    <div id="scr-game-settings" class="screen">
+        <h2>Настройки раунда</h2>
+        <label>Время игры (в минутах):</label>
+        <input type="number" id="set-time" value="5" min="1">
+        <label>Стартовый баланс ($):</label>
+        <input type="number" id="set-cash" value="0">
+        <button class="btn-green" style="margin-top:20px;" onclick="startGame()">ПОЕХАЛИ!</button>
+        <button class="btn-blue" style="background:var(--bl-red);" onclick="changeScreen('scr-project-hub')">Назад</button>
+    </div>
+
+    <div id="scr-game-play" class="screen">
+        <div class="factory-header">
+            <div id="fac-timer" class="factory-timer-badge">0:00</div>
+            <div class="factory-cash" id="fac-cash">$0</div>
+            <div class="factory-sub" id="fac-estimated-rps">Фабрика запущена</div>
+            <div class="factory-streak-badge" id="fac-correct-counter">Правильных ответов: 0 / 3</div>
+        </div>
+        <div class="factory-grid" id="factory-blooks-grid"></div>
+        <button class="btn-blue" style="background: #2575fc;" onclick="showQuizOverlay()">Next Question</button>
+    </div>
+
+    <div id="quiz-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bl-purple-dark); z-index:90; padding:15px; box-sizing:border-box;">
+        <div class="blooket-top-q" id="q-text-display">Question?</div>
+        <div class="blooket-answers-line">
+            <div class="blooket-ans-container"><button class="blooket-ans-btn" onclick="submitAnswer(0)" id="ans-btn-0"></button><div class="feedback-badge" id="badge-0">❌</div></div>
+            <div class="blooket-ans-container"><button class="blooket-ans-btn" onclick="submitAnswer(1)" id="ans-btn-1"></button><div class="feedback-badge" id="badge-1">❌</div></div>
+            <div class="blooket-ans-container"><button class="blooket-ans-btn" onclick="submitAnswer(2)" id="ans-btn-2"></button><div class="feedback-badge" id="badge-2">❌</div></div>
+            <div class="blooket-ans-container"><button class="blooket-ans-btn" onclick="submitAnswer(3)" id="ans-btn-3"></button><div class="feedback-badge" id="badge-3">❌</div></div>
+        </div>
+    </div>
+
+    <div id="choose-overlay" class="choose-overlay" style="display: none;">
+        <div class="choose-title">Choose a Blook</div>
+        <div class="choose-subtitle" id="choose-tier-info">Шансы рассчитываются от капитала</div>
+        <div class="choose-cards-container" id="choose-cards-box"></div>
+        <button class="btn-skip" onclick="closeChooseOverlay()">Skip</button>
+    </div>
+
+    <div id="scr-results" class="screen" style="text-align:center;">
+        <h2>Время вышло!</h2>
+        <h1 id="res-cash" style="font-size: 44px; color: var(--bl-gold);">$0</h1>
+        <button class="btn-blue" onclick="changeScreen('scr-project-hub')">В меню проекта</button>
+    </div>
+
+</div>
+
+<script>
+    let currentUserEmail = localStorage.getItem('blooket_user_email') || '';
+    let projectsData = [];
+    let currentProjectIndex = -1;
+    let projectQuestions = [];
+    let isRegisteringMode = false;
+
+    function checkEmailNextStep() {
+        let email = document.getElementById('auth-email').value.trim().toLowerCase();
+        if(!email || !email.includes('@')) {
+            alert('Введите корректный email!');
+            return;
+        }
+
+        let allUsers = JSON.parse(localStorage.getItem('blooket_accounts_system')) || {};
+        
+        document.getElementById('auth-step-email').style.display = 'none';
+        document.getElementById('auth-step-password').style.display = 'block';
+        
+        if (allUsers[email]) {
+            isRegisteringMode = false;
+            document.getElementById('auth-status-msg').innerText = "Аккаунт найден. Введите пароль для входа:";
+            document.getElementById('auth-status-msg').style.color = "var(--bl-blue)";
+            document.getElementById('reg-confirm-box').style.display = 'none';
+        } else {
+            isRegisteringMode = true;
+            document.getElementById('auth-status-msg').innerText = "Новый аккаунт! Придумайте пароль для регистрации:";
+            document.getElementById('auth-status-msg').style.color = "var(--bl-green)";
+            document.getElementById('reg-confirm-box').style.display = 'block';
+        }
+    }
+
+    function backToEmailStep() {
+        document.getElementById('auth-step-password').style.display = 'none';
+        document.getElementById('auth-step-email').style.display = 'block';
+        document.getElementById('auth-password').value = '';
+        document.getElementById('auth-password-confirm').value = '';
+    }
+
+    function handleFinalAuth() {
+        let email = document.getElementById('auth-email').value.trim().toLowerCase();
+        let pass = document.getElementById('auth-password').value;
+        let allUsers = JSON.parse(localStorage.getItem('blooket_accounts_system')) || {};
+
+        if (pass.length < 4) {
+            alert('Пароль должен быть не менее 4 символов!');
+            return;
+        }
+
+        if (isRegisteringMode) {
+            let passConfirm = document.getElementById('auth-password-confirm').value;
+            if (pass !== passConfirm) {
+                alert('Пароли не совпадают!');
+                return;
+            }
+            allUsers[email] = pass;
+            localStorage.setItem('blooket_accounts_system', JSON.stringify(allUsers));
+            alert('Регистрация успешна!');
+        } else {
+            if (allUsers[email] !== pass) {
+                alert('Неверный пароль! Попробуйте еще раз.');
+                return;
+            }
+        }
+
+        currentUserEmail = email;
+        localStorage.setItem('blooket_user_email', email);
+        initUserProjects();
+    }
+
+    function initUserProjects() {
+        document.getElementById('user-badge').innerText = `👤 ${currentUserEmail}`;
+        projectsData = JSON.parse(localStorage.getItem('projects_' + currentUserEmail));
+        
+        // ПОЛНОСТЬЮ ЧИСТЫЙ СТАРТ: если у пользователя нет сохраненных викторин,
+        // массив остается пустым, ничего автоматически не создается
+        if (!projectsData) {
+            projectsData = [];
+            localStorage.setItem('projects_' + currentUserEmail, JSON.stringify(projectsData));
+        }
+
+        renderProjectList();
+        changeScreen('scr-project-list');
+    }
+
+    function logout() {
+        localStorage.removeItem('blooket_user_email');
+        currentUserEmail = '';
+        document.getElementById('auth-email').value = '';
+        document.getElementById('auth-password').value = '';
+        document.getElementById('auth-password-confirm').value = '';
+        backToEmailStep();
+        changeScreen('scr-auth');
+    }
+
+    window.onload = function() {
+        if(currentUserEmail) {
+            initUserProjects();
+        } else {
+            changeScreen('scr-auth');
+        }
+    }
+
+    const blookPool = [
+        {
+            name: "Kitten", emoji: "🐱",
+            levels: [
+                { cash: 10, time: 4 }, { cash: 10, time: 5 }, { cash: 15, time: 4 },
+                { cash: 30, time: 5 }, { cash: 100, time: 3 }, { cash: 200, time: 3 },
+                { cash: 15000, time: 1 }
+            ],
+            costs: [30, 100, 1000, 5000, 6000, 56000],
+            sellPrices: [50, 100, 200, 300, 500, 400000, 1500000]
+        },
+        {
+            name: "Orangutan", emoji: "🦧",
+            levels: [
+                { cash: 50, time: 5 }, { cash: 50, time: 4 }, { cash: 75, time: 3 },
+                { cash: 500, time: 3 }, { cash: 1000, time: 3 }, { cash: 2000, time: 2 },
+                { cash: 30000, time: 0.5 }
+            ],
+            costs: [90, 300, 2500, 10000, 20000, 70000],
+            sellPrices: [150, 300, 600, 1200, 3000, 8000, 1200000]
+        },
+        {
+            name: "Caterpillar", emoji: "🐛",
+            levels: [
+                { cash: 100, time: 6 }, { cash: 130, time: 4 }, { cash: 600, time: 4 },
+                { cash: 1000, time: 3 }, { cash: 2000, time: 3 }, { cash: 10000, time: 2 },
+                { cash: 50000, time: 1 }
+            ],
+            costs: [450, 10000, 20000, 25000, 50000, 300000],
+            sellPrices: [400, 900, 2000, 5000, 12000, 45000, 3500000]
+        },
+        {
+            name: "Penguin", emoji: "🐧",
+            levels: [
+                { cash: 700, time: 5 }, { cash: 1000, time: 4 }, { cash: 1200, time: 2 },
+                { cash: 3000, time: 3 }, { cash: 10000, time: 3 }, { cash: 30000, time: 2 },
+                { cash: 250000, time: 2 }
+            ],
+            costs: [1800, 6000, 20000, 80000, 200000, 500000],
+            sellPrices: [1500, 3500, 8500, 22000, 70000, 240000, 18000000]
+        },
+        {
+            name: "Zebra", emoji: "🦓",
+            levels: [
+                { cash: 1500, time: 4 }, { cash: 4000, time: 4 }, { cash: 6000, time: 3 },
+                { cash: 15000, time: 3 }, { cash: 45000, time: 2 }, { cash: 95000, time: 2 },
+                { cash: 600000, time: 1 }
+            ],
+            costs: [750, 15000, 150000, 200000, 555000, 2000000],
+            sellPrices: [5000, 12000, 30000, 90000, 280000, 800000, 45000000]
+        },
+        {
+            name: "King", emoji: "👑",
+            levels: [
+                { cash: 10000, time: 5 }, { cash: 15000, time: 4 }, { cash: 50000, time: 4 },
+                { cash: 85000, time: 3 }, { cash: 104000, time: 2 }, { cash: 500000, time: 2 },
+                { cash: 3200000, time: 1 }
+            ],
+            costs: [35000, 100000, 300000, 705000, 2000000, 15000000],
+            sellPrices: [25000, 65000, 180000, 500000, 1400000, 4500000, 200000000]
+        },
+        {
+            name: "Astronaut", emoji: "👨‍🚀",
+            levels: [
+                { cash: 50000, time: 4 }, { cash: 85000, time: 4 }, { cash: 160000, time: 3 },
+                { cash: 450000, time: 3 }, { cash: 1300000, time: 2 }, { cash: 3000000, time: 2 },
+                { cash: 28000000, time: 1 }
+            ],
+            costs: [150000, 400000, 1000000, 6000000, 18000000, 50000000],
+            sellPrices: [100000, 280000, 800000, 2500000, 8000000, 25000000, 1500000000]
+        }
+    ];
+
+    let gameTimer = null, engineInterval = null;
+    let timeLeft = 0, currentCash = 0;
+    let activeQuestion = null;
+    let isEvaluating = false; 
+    let playerFactory = []; 
+    let correctAnswersStreak = 0;
+    let totalCashEarnedSession = 0;
+
+    function formatCash(num) {
+        if (num === "MAX") return "MAX";
+        if (Math.abs(num) < 1000) return num.toString();
+        const units = ["K", "M", "B", "T", "Qd"];
+        let unitIdx = -1;
+        let checkNum = Math.abs(num);
+        while (checkNum >= 1000 && unitIdx < units.length - 1) {
+            checkNum /= 1000;
+            unitIdx++;
+        }
+        let formatted = checkNum.toFixed(2).replace(/\.00$/, '').replace(/(\.[1-9])0$/, '$1');
+        return (num < 0 ? "-" : "") + formatted + " " + units[unitIdx];
+    }
+
+    function renderProjectList() {
+        const container = document.getElementById('project-list-container');
+        container.innerHTML = '';
+
+        if (projectsData.length === 0) {
+            container.innerHTML = `<div style="text-align:center; color:#bbb; padding:20px; font-weight:700;">Список викторин пуст. Создайте свою первую игру!</div>`;
+            return;
+        }
+
+        projectsData.forEach((proj, idx) => {
+            const div = document.createElement('div');
+            div.className = 'project-item-row';
+            div.innerHTML = `
+                <span style="font-weight:700; font-size:18px;">📁 ${proj.name} (${proj.questions.length})</span>
+                <div style="display:flex; gap:8px;">
+                    <button style="background:var(--bl-orange); padding:6px 14px; box-shadow:none; border-radius:6px;" onclick="renameProject(${idx})">✏️</button>
+                    <button style="background:var(--bl-green); padding:6px 16px; box-shadow:none; border-radius:6px;" onclick="selectProject(${idx})">Открыть</button>
+                    <button style="background:var(--bl-red); padding:6px 14px; box-shadow:none; border-radius:6px;" onclick="deleteProjectFromList(${idx})">🗑️</button>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function renameProject(idx) {
+        let currentName = projectsData[idx].name;
+        let newName = prompt("Введите новое название для этой викторины:", currentName);
+        if (!newName) return;
+        newName = newName.trim();
+        if (!newName || newName === currentName) return;
+
+        projectsData[idx].name = newName;
+        localStorage.setItem('projects_' + currentUserEmail, JSON.stringify(projectsData));
+        renderProjectList();
+    }
+
+    function createNewProjectAction() {
+        let name = prompt("Введите название нового проекта:", "Викторина #" + (projectsData.length + 1));
+        if(!name) return;
+        name = name.trim();
+        if(!name) return;
+
+        projectsData.push({
+            name: name,
+            questions: [{ id: 1, q: "", a: ["", "", "", ""], map: [true, false, false, false] }]
+        });
+        localStorage.setItem('projects_' + currentUserEmail, JSON.stringify(projectsData));
+        renderProjectList();
+    }
+
+    function deleteProjectFromList(idx) {
+        if(confirm(`Удалить проект "${projectsData[idx].name}"?`)) {
+            projectsData.splice(idx, 1);
+            localStorage.setItem('projects_' + currentUserEmail, JSON.stringify(projectsData));
+            renderProjectList();
+        }
+    }
+
+    function selectProject(idx) {
+        currentProjectIndex = idx;
+        projectQuestions = projectsData[idx].questions;
+        document.getElementById('hub-project-title').innerText = projectsData[idx].name;
+        changeScreen('scr-project-hub');
+    }
+
+    function changeScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        const target = document.getElementById(screenId);
+        if(target) target.classList.add('active');
+    }
+
+    function openEditorScreen() {
+        changeScreen('scr-editor-line');
+        renderFullLine();
+    }
+
+    function renderFullLine() {
+        const container = document.getElementById('questions-line-container');
+        container.innerHTML = '';
+
+        if(projectQuestions.length === 0) {
+            projectQuestions.push({ id: 1, q: "", a: ["", "", "", ""], map: [true, false, false, false] });
+        }
+
+        projectQuestions.forEach((q, idx) => {
+            const div = document.createElement('div');
+            div.className = 'line-q-card';
+            div.id = `line-card-${q.id}`;
+            
+            let answersHtml = '';
+            for(let i = 0; i < 4; i++) {
+                let isCorrect = q.map ? q.map[i] : (i === 0);
+                let badge = isCorrect ? '✅' : '❌';
+                let btnClass = isCorrect ? 'status-correct' : 'status-wrong';
+                
+                answersHtml += `
+                    <div class="ans-row">
+                        <input type="text" class="in-a${i}" data-id="${q.id}" value="${q.a[i] || ''}" placeholder="Вариант ответа ${i+1}">
+                        <button type="button" class="btn-toggle-correct ${btnClass}" data-id="${q.id}" data-idx="${i}" onclick="toggleCorrectStatus(${q.id}, ${i})">${badge}</button>
+                    </div>
+                `;
+            }
+
+            div.innerHTML = `
+                <div style="font-weight:900; margin-bottom:8px; color:var(--bl-gold);">Вопрос #${idx+1}</div>
+                <input type="text" class="in-q" data-id="${q.id}" value="${q.q || ''}" placeholder="Текст вопроса...">
+                ${answersHtml}
+                <button style="background:var(--bl-red); padding:5px 12px; font-size:12px; margin-top:8px; width:100%;" onclick="deleteQuestion(${q.id})">🗑️ Удалить вопрос</button>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function toggleCorrectStatus(qId, ansIdx) {
+        syncInputs();
+        let q = projectQuestions.find(item => item.id === qId);
+        if(q) {
+            if(!q.map) q.map = [true, false, false, false];
+            q.map[ansIdx] = !q.map[ansIdx];
+            renderFullLine();
+        }
+    }
+
+    function addNewQuestionToLine() {
+        syncInputs();
+        const newId = projectQuestions.length > 0 ? Math.max(...projectQuestions.map(q => q.id)) + 1 : 1;
+        projectQuestions.push({ id: newId, q: "", a: ["", "", "", ""], map: [true, false, false, false] });
+        renderFullLine();
+        setTimeout(() => {
+            const el = document.getElementById(`line-card-${newId}`);
+            if(el) el.scrollIntoView({ behavior: 'smooth' });
+        }, 60);
+    }
+
+    function syncInputs() {
+        projectQuestions.forEach(q => {
+            const qIn = document.querySelector(`.in-q[data-id="${q.id}"]`);
+            if(!q.map) q.map = [true, false, false, false];
+            for(let i = 0; i < 4; i++) {
+                const aIn = document.querySelector(`.in-a${i}[data-id="${q.id}"]`);
+                if(aIn) q.a[i] = aIn.value.trim();
+            }
+            if(qIn) q.q = qIn.value.trim();
+        });
+    }
+
+    function deleteQuestion(id) {
+        syncInputs();
+        projectQuestions = projectQuestions.filter(q => q.id !== id);
+        renderFullLine();
+    }
+
+    function saveProjectAndReturn() {
+        syncInputs();
+        if(projectQuestions.some(q => !q.q || !q.a.some(ans => ans !== ""))) {
+            alert("Заполните текст вопроса и варианты ответов!");
+            return;
+        }
+        projectsData[currentProjectIndex].questions = projectQuestions;
+        localStorage.setItem('projects_' + currentUserEmail, JSON.stringify(projectsData));
+        renderProjectList();
+        changeScreen('scr-project-hub');
+    }
+
+    function openSettingsScreen() {
+        if(projectQuestions.length === 0 || !projectQuestions[0].q) {
+            alert("Сначала добавьте вопросы в редакторе!");
+            return;
+        }
+        changeScreen('scr-game-settings');
+    }
+
+    function startGame() {
+        let minsInput = parseFloat(document.getElementById('set-time').value) || 5;
+        timeLeft = Math.round(minsInput * 60); 
+        currentCash = parseInt(document.getElementById('set-cash').value) || 0;
+        
+        totalCashEarnedSession = currentCash;
+        playerFactory = []; 
+        isEvaluating = false;
+        correctAnswersStreak = 0;
+
+        updateHUD();
+        renderFactoryGrid();
+        changeScreen('scr-game-play');
+
+        if(gameTimer) clearInterval(gameTimer);
+        if(engineInterval) clearInterval(engineInterval);
+
+        gameTimer = setInterval(() => {
+            timeLeft--;
+            if(timeLeft <= 0) stopGame();
+            else updateHUD();
+        }, 1000);
+
+        engineInterval = setInterval(() => {
+            playerFactory.forEach((slot, idx) => {
+                if(slot) {
+                    let currentStats = slot.levels[slot.currentLevel];
+                    slot.elapsed += 0.1; 
+                    if(slot.elapsed >= currentStats.time) {
+                        currentCash += currentStats.cash;
+                        totalCashEarnedSession += currentStats.cash;
+                        slot.elapsed = 0; 
+                        updateHUD();
+                    }
+                    const pBar = document.getElementById(`progress-${idx}`);
+                    if(pBar) {
+                        let pct = (slot.elapsed / currentStats.time) * 100;
+                        pBar.style.width = `${Math.min(pct, 100)}%`;
+                    }
+                }
+            });
+        }, 100); 
+    }
+
+    function updateHUD() {
+        let mins = Math.floor(timeLeft / 60);
+        let secs = timeLeft % 60;
+        document.getElementById('fac-timer').innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        document.getElementById('fac-cash').innerText = `$${formatCash(currentCash)}`;
+        document.getElementById('fac-correct-counter').innerText = `Правильных ответов: ${correctAnswersStreak} / 3`;
+    }
+
+    function renderFactoryGrid() {
+        const grid = document.getElementById('factory-blooks-grid');
+        grid.innerHTML = '';
+        
+        if (playerFactory.length === 0) {
+            grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: #bbb; padding: 40px 10px; font-weight: 700;">Правильно ответьте на 3 вопроса, чтобы открыть Блука!</div>`;
+            return;
+        }
+
+        playerFactory.forEach((slot, i) => {
+            const div = document.createElement('div');
+            div.className = 'factory-slot';
+            let currentStats = slot.levels[slot.currentLevel];
+            let isMax = slot.currentLevel >= 6;
+            let costText = isMax ? "MAX" : `$${formatCash(slot.costs[slot.currentLevel])}`;
+            let labelLevel = slot.currentLevel === 6 ? "MAX" : `Ур. ${slot.currentLevel}`;
+            let sellPrice = slot.sellPrices[slot.currentLevel] || 0;
+
+            div.innerHTML = `
+                <button class="btn-sell-blook" onclick="sellBlook(${i}, '${slot.name}', ${sellPrice})">×</button>
+                <div class="slot-title">${labelLevel} • $${formatCash(currentStats.cash)}/${currentStats.time}с</div>
+                <div class="slot-emoji">${slot.emoji}</div>
+                <div class="slot-name">${slot.name}</div>
+                <button class="btn-max" id="up-btn-${i}" onclick="upgradeSlot(${i})" ${isMax ? 'disabled' : ''}>^ Апгрейд (${costText})</button>
+                <div class="slot-progress-bar" id="progress-${i}"></div>
+            `;
+            grid.appendChild(div);
+        });
+    }
+
+    function sellBlook(index, name, price) {
+        if (confirm(`Продать ${name} за $${formatCash(price)}?`)) {
+            currentCash += price;
+            playerFactory.splice(index, 1);
+            updateHUD();
+            renderFactoryGrid();
+        }
+    }
+
+    function upgradeSlot(index) {
+        let b = playerFactory[index];
+        if(!b || b.currentLevel >= 6) return;
+        let cost = b.costs[b.currentLevel];
+        if(currentCash >= cost) {
+            currentCash -= cost;
+            b.currentLevel++;
+            b.elapsed = 0; 
+            updateHUD();
+            renderFactoryGrid();
+        } else {
+            alert("Недостаточно денег!");
+        }
+    }
+
+    function showQuizOverlay() {
+        if(isEvaluating) return;
+        const rand = projectQuestions[Math.floor(Math.random() * projectQuestions.length)];
+        let answers = [];
+        for(let i=0; i<4; i++) {
+            if(rand.a[i]) answers.push({ text: rand.a[i], isCorrect: rand.map ? rand.map[i] : (i === 0) });
+        }
+        answers.sort(() => Math.random() - 0.5);
+
+        activeQuestion = { text: rand.q, options: answers };
+        document.getElementById('q-text-display').innerText = activeQuestion.text;
+        
+        for(let i=0; i<4; i++) {
+            const btn = document.getElementById(`ans-btn-${i}`);
+            const badgeEl = document.getElementById(`badge-${i}`);
+            badgeEl.style.display = 'none'; 
+            if(activeQuestion.options[i]) {
+                btn.innerText = activeQuestion.options[i].text;
+                btn.parentElement.style.display = "block";
+            } else {
+                btn.parentElement.style.display = "none";
+            }
+        }
+        document.getElementById('quiz-overlay').style.display = 'block';
+    }
+
+    function submitAnswer(chosenIdx) {
+        if(isEvaluating) return;
+        isEvaluating = true;
+        let isCorrect = activeQuestion.options[chosenIdx].isCorrect;
+
+        for(let i = 0; i < 4; i++) {
+            if(activeQuestion.options[i]) {
+                document.getElementById(`badge-${i}`).innerText = activeQuestion.options[i].isCorrect ? "✅" : "❌";
+                document.getElementById(`badge-${i}`).style.display = "block";
+            }
+        }
+
+        setTimeout(() => {
+            document.getElementById('quiz-overlay').style.display = 'none';
+            isEvaluating = false;
+            if(isCorrect) {
+                correctAnswersStreak++;
+                if(correctAnswersStreak >= 3) {
+                    correctAnswersStreak = 0;
+                    openChooseOverlay(); 
+                }
+            }
+            updateHUD();
+        }, 1000);
+    }
+
+    function getDynamicWeights() {
+        let money = totalCashEarnedSession;
+        let weights = { "Kitten": 70, "Orangutan": 50, "Caterpillar": 0, "Penguin": 0, "Zebra": 0, "King": 0, "Astronaut": 0 };
+        if (money > 500) { weights["Kitten"] = 40; weights["Orangutan"] = 40; weights["Caterpillar"] = 30; }
+        if (money > 5000) { weights["Kitten"] = 10; weights["Orangutan"] = 20; weights["Caterpillar"] = 40; weights["Penguin"] = 30; }
+        if (money > 50000) { weights["Caterpillar"] = 10; weights["Penguin"] = 30; weights["Zebra"] = 40; weights["King"] = 20; }
+        if (money > 500000) { weights["Penguin"] = 5; weights["Zebra"] = 20; weights["King"] = 40; weights["Astronaut"] = 35; }
+        return weights;
+    }
+
+    function openChooseOverlay() {
+        const box = document.getElementById('choose-cards-box');
+        box.innerHTML = '';
+        let weights = getDynamicWeights();
+
+        for (let slotNum = 0; slotNum < 3; slotNum++) {
+            let total = Object.values(weights).reduce((a, b) => a + b, 0);
+            let roll = Math.random() * total, sum = 0, chosenBlook = blookPool[0];
+
+            for (let b of blookPool) {
+                sum += (weights[b.name] || 0);
+                if (roll <= sum) { chosenBlook = b; break; }
+            }
+
+            const card = document.createElement('div');
+            card.className = 'choose-card';
+            card.innerHTML = `
+                <div class="c-emoji">${chosenBlook.emoji}</div>
+                <div style="font-size:14px; font-weight:900; margin-top:5px;">${chosenBlook.name}</div>
+                <div style="font-size:12px; color:#eee;">+$${formatCash(chosenBlook.levels[0].cash)}/${chosenBlook.levels[0].time}с</div>
+            `;
+            card.onclick = () => {
+                playerFactory.push({ ...chosenBlook, currentLevel: 0, elapsed: 0 });
+                closeChooseOverlay();
+                renderFactoryGrid();
+            };
+            box.appendChild(card);
+        }
+        document.getElementById('choose-overlay').style.display = 'flex';
+    }
+
+    function closeChooseOverlay() { document.getElementById('choose-overlay').style.display = 'none'; }
+
+    function stopGame() {
+        clearInterval(gameTimer);
+        clearInterval(engineInterval);
+        document.getElementById('quiz-overlay').style.display = 'none';
+        document.getElementById('choose-overlay').style.display = 'none';
+        document.getElementById('res-cash').innerText = `$${formatCash(currentCash)}`;
+        changeScreen('scr-results');
+    }
+</script>
+
+</body>
+</html>
